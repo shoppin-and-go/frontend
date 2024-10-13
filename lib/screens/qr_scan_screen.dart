@@ -13,27 +13,12 @@ class QRScanScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Column(
-              children: [
-                const Text("QR 스캔"),
-                ElevatedButton(
-                  child: const Text('스캔 시작'),
-                  onPressed: () {
-                    _navigateAndDisplaySelection(context);
-                  },
-                ),
-              ],
-            ),
-            Column(
-              children: [
-                const Text("카트 정보 보기"),
-                ElevatedButton(
-                  child: const Text('카트 확인'),
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/cart');
-                  },
-                )
-              ],
+            const Text("QR 스캔"),
+            ElevatedButton(
+              child: const Text('스캔 시작'),
+              onPressed: () {
+                _navigateToScannerAndCart(context);
+              },
             ),
           ],
         ),
@@ -43,15 +28,19 @@ class QRScanScreen extends StatelessWidget {
 }
 
 // pop 된 qr code SnackBar 로 띄워주기
-Future<void> _navigateAndDisplaySelection(BuildContext context) async {
+Future<void> _navigateToScannerAndCart(BuildContext context) async {
   // Navigator.push returns a Future that completes after calling
   // Navigator.pop on the Selection Screen.
   final result = await Navigator.pushNamed(context, '/scanner');
 
   if (!context.mounted) return;
-  ScaffoldMessenger.of(context)
-    ..removeCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text('$result')));
+  if (result != null) {
+    // QR 스캔 결과가 있어야 snackbar를 띄우고 카트 화면으로 이동
+    ScaffoldMessenger.of(context)
+      ..removeCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text('$result')));
+    Navigator.pushNamed(context, '/cart', arguments: result);
+  }
 }
 
 //qr 스캐너 클래스
