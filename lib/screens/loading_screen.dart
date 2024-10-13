@@ -21,7 +21,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
             ElevatedButton(
               child: const Text('시작하기'),
               onPressed: () {
-                Navigator.pushNamed(context, '/qr_scan');
+                Navigator.pushNamed(context, '/register');
               },
             ),
           ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shoppin_and_go/screens/loading_screen.dart';
+import 'package:shoppin_and_go/screens/register_screen.dart';
 import 'package:shoppin_and_go/screens/qr_scan_screen.dart';
 import 'package:shoppin_and_go/screens/cart_screen.dart';
 
@@ -17,9 +18,9 @@ class MyApp extends StatelessWidget {
       home: const LoadingScreen(),
       debugShowCheckedModeBanner: false,
       routes: {
-        '/qr_scan': (context) => const QRScanScreen(),
+        '/register': (context) => const RegisterScreen(),
+        '/scanner': (context) => const QRScanScreen(),
         '/cart': (context) => const CartScreen(),
-        '/scanner': (context) => const QRScanner(),
       },
     );
   }
