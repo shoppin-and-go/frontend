@@ -13,12 +13,29 @@ class QRScanScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("QR 스캔"),
             ElevatedButton(
-              child: const Text('스캔 시작'),
               onPressed: () {
                 _navigateToScannerAndCart(context);
               },
+              style: ElevatedButton.styleFrom(
+                shape: const CircleBorder(),
+                padding: const EdgeInsets.all(24),
+                backgroundColor: const Color.fromRGBO(0xDB, 0x1E, 0x17, 1),
+                elevation: 8,
+                shadowColor: Colors.black,
+              ),
+              child: const Icon(
+                Icons.qr_code_scanner,
+                size: 84,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 40),
+            const Text(
+              "카트를 등록하세요",
+              style: TextStyle(
+                fontSize: 20,
+              ),
             ),
           ],
         ),
