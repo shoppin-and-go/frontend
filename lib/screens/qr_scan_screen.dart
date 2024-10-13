@@ -19,8 +19,7 @@ class QRScanScreen extends StatelessWidget {
                 ElevatedButton(
                   child: const Text('스캔 시작'),
                   onPressed: () {
-                    // Navigator.pushNamed(context, '/cart');
-                    Navigator.pushNamed(context, '/scanner');
+                    _navigateAndDisplaySelection(context);
                   },
                 ),
               ],
@@ -32,7 +31,6 @@ class QRScanScreen extends StatelessWidget {
                   child: const Text('카트 확인'),
                   onPressed: () {
                     Navigator.pushNamed(context, '/cart');
-                    // Navigator.pushNamed(context, '/scanner');
                   },
                 )
               ],
@@ -42,6 +40,18 @@ class QRScanScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+// pop 된 qr code SnackBar 로 띄워주기
+Future<void> _navigateAndDisplaySelection(BuildContext context) async {
+  // Navigator.push returns a Future that completes after calling
+  // Navigator.pop on the Selection Screen.
+  final result = await Navigator.pushNamed(context, '/scanner');
+
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context)
+    ..removeCurrentSnackBar()
+    ..showSnackBar(SnackBar(content: Text('$result')));
 }
 
 //qr 스캐너 클래스
@@ -118,8 +128,6 @@ class _QRScannerState extends State<QRScanner> {
 
       setState(() {
         result = scanData; // 스캔된 데이터를 담는다.
-        print('barcode_result----------------');
-        print(result!.code);
 
         // result를 다시 url로 담는다.
         String url = result!.code.toString();

@@ -21,9 +21,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
             ElevatedButton(
               child: const Text('시작하기'),
               onPressed: () {
-                // Navigator.pushNamed(context, '/qr_scan');
-                // Navigator.pushNamed(context, '/scanner');
-                _navigateAndDisplaySelection(context);
+                Navigator.pushNamed(context, '/qr_scan');
               },
             ),
           ],
@@ -31,16 +29,4 @@ class _LoadingScreenState extends State<LoadingScreen> {
       ),
     );
   }
-}
-
-// pop 된 qr code SnackBar 로 띄워주기
-Future<void> _navigateAndDisplaySelection(BuildContext context) async {
-  // Navigator.push returns a Future that completes after calling
-  // Navigator.pop on the Selection Screen.
-  final result = await Navigator.pushNamed(context, '/qr_scan');
-
-  if (!context.mounted) return;
-  ScaffoldMessenger.of(context)
-    ..removeCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text('$result')));
 }
