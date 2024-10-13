@@ -15,9 +15,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Shoppin and Go',
       home: const LoadingScreen(),
+      debugShowCheckedModeBanner: false,
       routes: {
         '/qr_scan': (context) => const QRScanScreen(),
         '/cart': (context) => const CartScreen(),
+        '/scanner': (context) => const QRScanner(),
       },
     );
   }
