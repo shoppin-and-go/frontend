@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
@@ -12,7 +13,7 @@ class RegisterScreen extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () {
-                _navigateToScannerAndCart(context);
+                _checkCameraPermission(context); // 권환 확인
               },
               style: ElevatedButton.styleFrom(
                 shape: const CircleBorder(),
@@ -37,6 +38,24 @@ class RegisterScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+Future<void> _checkCameraPermission(BuildContext context) async {
+  var status = await Permission.camera.status;
+  if (status.isDenied) {
+    // 권한이 없을 때 권한 요청
+    status = await Permission.camera.request();
+  }
+
+  if (status.isGranted) {
+    // 권한이 허용된 경우에만 QR 스캔 화면으로 이동
+    _navigateToScannerAndCart(context);
+  } else {
+    // 권한이 없을 경우 안내 메시지 표시
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('카메라 권한이 필요합니다.')),
     );
   }
 }
