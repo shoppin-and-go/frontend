@@ -49,15 +49,42 @@ Future<void> _checkCameraPermission(BuildContext context) async {
     status = await Permission.camera.request();
   }
 
+  if (!context.mounted) return;
   if (status.isGranted) {
     // 권한이 허용된 경우에만 QR 스캔 화면으로 이동
     _navigateToScannerAndCart(context);
+  } else if (status.isPermanentlyDenied) {
+    // 영구 거부 상태일 때 사용자에게 설정으로 이동하도록 안내
+    _showPermissionDeniedDialog(context);
   } else {
     // 권한이 없을 경우 안내 메시지 표시
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('카메라 권한이 필요합니다.')),
     );
   }
+}
+
+void _showPermissionDeniedDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) => AlertDialog(
+      title: const Text('카메라 권한 필요'),
+      content: const Text('이 기능을 사용하려면 설정에서 카메라 권한을 허용해야 합니다.'),
+      actions: <Widget>[
+        TextButton(
+          child: const Text('취소'),
+          onPressed: () => Navigator.pop(context),
+        ),
+        TextButton(
+          child: const Text('설정으로 이동'),
+          onPressed: () async {
+            Navigator.pop(context);
+            await openAppSettings();
+          },
+        ),
+      ],
+    ),
+  );
 }
 
 // pop 된 qr code SnackBar 로 띄워주기

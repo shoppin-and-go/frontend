@@ -56,8 +56,6 @@ class _QRScanScreenState extends State<QRScanScreen> {
           borderLength: 30, // 테두리 길이 길면 길수록 네모에 가까워진다.
           borderWidth: 10, // 테두리 너비
           cutOutSize: scanArea),
-      // 카메라 사용 권한을 체크한다.
-      onPermissionSet: (ctrl, p) => _onPermissionSet(context, ctrl, p),
     );
   }
 
@@ -85,17 +83,6 @@ class _QRScanScreenState extends State<QRScanScreen> {
         }
       });
     });
-  }
-
-  // 권한 체크를 위한 함수
-  void _onPermissionSet(BuildContext context, QRViewController ctrl, bool p) {
-    //log('${DateTime.now().toIso8601String()}_onPermissionSet $p');
-    if (!p) {
-      // 카메라 사용 권한이 없을 경우
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('no Permission')),
-      );
-    }
   }
 
   // 사용이 끝나면 컨트롤러를 폐기
