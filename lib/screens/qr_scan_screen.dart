@@ -1,58 +1,15 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
-class QRScanScreen extends StatelessWidget {
+class QRScanScreen extends StatefulWidget {
   const QRScanScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Column(
-              children: [
-                const Text("QR 스캔"),
-                ElevatedButton(
-                  child: const Text('스캔 시작'),
-                  onPressed: () {
-                    // Navigator.pushNamed(context, '/cart');
-                    Navigator.pushNamed(context, '/scanner');
-                  },
-                ),
-              ],
-            ),
-            Column(
-              children: [
-                const Text("카트 정보 보기"),
-                ElevatedButton(
-                  child: const Text('카트 확인'),
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/cart');
-                    // Navigator.pushNamed(context, '/scanner');
-                  },
-                )
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  State<StatefulWidget> createState() => _QRScanScreenState();
 }
 
-//qr 스캐너 클래스
-class QRScanner extends StatefulWidget {
-  const QRScanner({super.key});
-
-  @override
-  State<StatefulWidget> createState() => _QRScannerState();
-}
-
-class _QRScannerState extends State<QRScanner> {
+class _QRScanScreenState extends State<QRScanScreen> {
   Barcode? result;
   QRViewController? controller;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
@@ -118,8 +75,6 @@ class _QRScannerState extends State<QRScanner> {
 
       setState(() {
         result = scanData; // 스캔된 데이터를 담는다.
-        print('barcode_result----------------');
-        print(result!.code);
 
         // result를 다시 url로 담는다.
         String url = result!.code.toString();

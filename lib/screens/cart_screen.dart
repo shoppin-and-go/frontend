@@ -5,8 +5,13 @@ class CartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
+    final String cartId = ModalRoute.of(context)!.settings.arguments as String;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(cartId),
+      ),
+      body: const Center(
         child: Text("장바구니"),
       ),
     );
