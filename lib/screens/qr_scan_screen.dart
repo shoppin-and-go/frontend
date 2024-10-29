@@ -14,8 +14,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
   QRViewController? controller;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
-  // qr_code_scanner의 hot reload를 보장하려면 안드로이드의 경우에는 pauseCamera(),
-  // iOS의 경우에는 resumeCamera()를 처리해줘야한다.
+  // 플랫폼에 따라 카메라 제어 (안드로이드: pause, iOS: resume)
   @override
   void reassemble() {
     super.reassemble();
@@ -30,62 +29,105 @@ class _QRScanScreenState extends State<QRScanScreen> {
     return Scaffold(
       body: Column(
         children: <Widget>[
-          //_buildQrView를 실행하면서 스캐너를 뷰에 뿌려줌
-          Expanded(flex: 4, child: _buildQrView(context)),
+          // QR 스캐너 뷰
+          Expanded(flex: 9, child: _buildQrView(context)),
+          // 하단에 직접 코드 입력 버튼 추가
+          Expanded(
+            flex: 1,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: _manualCodeInput, // 버튼 클릭 시 직접 코드 입력 함수 호출
+                  child: const Text("직접 코드 입력"),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
+  // QR 스캐너 뷰를 빌드하는 위젯
   Widget _buildQrView(BuildContext context) {
-    // 디바이스의 크기에 따라 scanArea를 지정 반응형(?)과 비슷한 개념
+    // 화면 크기에 맞춰 QR 스캔 영역 크기 설정
     var scanArea = (MediaQuery.of(context).size.width < 400 ||
             MediaQuery.of(context).size.height < 400)
         ? 150.0
         : 300.0;
-    // To ensure the Scanner view is properly sizes after rotation
-    // we need to listen for Flutter SizeChanged notification and update controller
+
     return QRView(
       key: qrKey,
-      onQRViewCreated: _onQRViewCreated, // QRView가 생성되면 _onQRViewCreated를 실행
-
-      // QR을 읽힐 네모난 칸의 디자인을 설정
+      onQRViewCreated: _onQRViewCreated, // QRView가 생성되면 _onQRViewCreated 실행
       overlay: QrScannerOverlayShape(
-          borderColor: const Color.fromRGBO(0xDB, 0x1E, 0x17, 1), // 모서리 테두리 색
-          borderRadius: 10, // 둥글게 둥글게
-          borderLength: 30, // 테두리 길이 길면 길수록 네모에 가까워진다.
+          borderColor: const Color.fromRGBO(0xDB, 0x1E, 0x17, 1), // 스캐너 테두리 색상
+          borderRadius: 10, // 테두리 둥근 정도
+          borderLength: 30, // 테두리 길이
           borderWidth: 10, // 테두리 너비
-          cutOutSize: scanArea),
+          cutOutSize: scanArea), // 스캔 영역 크기
     );
   }
 
+  // QR 스캐너 생성 시 호출되는 함수
   void _onQRViewCreated(QRViewController controller) {
     setState(() {
-      this.controller = controller; // 컨트롤러를 통해 스캐너를 제어
+      this.controller = controller;
     });
 
-    // 인식시킬 QR코드가 여러개 붙어있을 경우 여러개를 한번에 인식해버리는
-    // 문제가 발생하여 먼저 인식된 QR코드 하나만 인식하기위한 코드
-    int counter = 0;
+    int counter = 0; // 여러 QR 인식 방지용 카운터
     controller.scannedDataStream.listen((scanData) async {
-      counter++; // QR코드가 인식되면 counter를 1 올려준다.
-      await controller.pauseCamera(); // 인식되었으니 카메라를 멈춘다.
+      counter++;
+      await controller.pauseCamera(); // 첫 인식 후 카메라 정지
 
       setState(() {
-        result = scanData; // 스캔된 데이터를 담는다.
-
-        // result를 다시 url로 담는다.
+        result = scanData; // 스캔 결과 저장
         String url = result!.code.toString();
 
         if (counter == 1) {
-          // QR이 인식 되었을 경우 스캐너를 닫으며 결과를 넘긴다.
-          Navigator.pop(context, url);
+          Navigator.pop(context, url); // 스캔 완료 후 URL 반환하며 화면 종료
         }
       });
     });
   }
 
-  // 사용이 끝나면 컨트롤러를 폐기
+  // 사용자가 직접 코드를 입력할 수 있는 다이얼로그
+  Future<void> _manualCodeInput() async {
+    String? code = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        TextEditingController textController = TextEditingController();
+        return AlertDialog(
+          title: const Text("코드 입력"),
+          content: TextField(
+            controller: textController,
+            decoration: const InputDecoration(hintText: "코드를 입력하세요"),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, textController.text); // 입력 완료 시 값 반환
+              },
+              child: const Text("확인"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, null); // 취소 시 null 반환
+              },
+              child: const Text("취소"),
+            ),
+          ],
+        );
+      },
+    );
+
+    // 입력한 코드가 null이 아니고 비어 있지 않을 경우 해당 코드 반환
+    if (code != null && code.isNotEmpty) {
+      Navigator.pop(context, code);
+    }
+  }
+
+  // 위젯이 제거될 때 컨트롤러 리소스 해제
   @override
   void dispose() {
     controller?.dispose();
