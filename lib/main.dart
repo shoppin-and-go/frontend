@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shoppin_and_go/screens/loading_screen.dart';
+import 'package:shoppin_and_go/screens/reciept_screen.dart';
 import 'package:shoppin_and_go/screens/register_screen.dart';
 import 'package:shoppin_and_go/screens/qr_scan_screen.dart';
 import 'package:shoppin_and_go/screens/cart_screen.dart';
+import 'package:shoppin_and_go/screens/payment_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,6 +23,8 @@ class MyApp extends StatelessWidget {
         '/register': (context) => const RegisterScreen(),
         '/scanner': (context) => const QRScanScreen(),
         '/cart': (context) => const CartScreen(),
+        '/payment': (context) => const PaymentScreen(),
+        '/receipt': (context) => const ReceiptScreen(),
       },
     );
   }

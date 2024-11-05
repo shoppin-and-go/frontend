@@ -24,6 +24,11 @@ class _LoadingScreenState extends State<LoadingScreen> {
                 Navigator.pushNamed(context, '/register');
               },
             ),
+            ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/payment');
+                },
+                child: const Text('결제화면 보기'))
           ],
         ),
       ),
