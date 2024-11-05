@@ -49,7 +49,7 @@ class CartItem extends StatelessWidget {
             ),
           ),
           Text(
-            '수량: $count',
+            '수량 : $count',
             style: const TextStyle(fontSize: 14),
           ),
         ],
