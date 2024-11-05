@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shoppin_and_go/widgets/cart_item.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
@@ -11,8 +12,21 @@ class CartScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(cartId),
       ),
-      body: const Center(
-        child: Text("장바구니"),
+      body: ListView(
+        children: const [
+          CartItem(
+            name: '펩시',
+            price: '1,600',
+            count: '1',
+            imagePath: 'assets/pepsi.png',
+          ),
+          CartItem(
+            name: '콘칩',
+            price: '1,500',
+            count: '1',
+            imagePath: 'assets/cornchip.png',
+          ),
+        ],
       ),
     );
   }
