@@ -1,3 +1,5 @@
+// PaymentScreen.dart
+
 import 'package:flutter/material.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -41,7 +43,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           children: [
             // 총 금액 표시
             Text(
-              '총 금액: ₩$totalAmount', // 계산된 총 금액 표시
+              '총 금액: ₩$totalAmount',
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             // 카드 선택 캐로셀
@@ -61,9 +63,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     },
                     child: Card(
                       margin: const EdgeInsets.symmetric(horizontal: 8.0),
-                      color: isSelected
-                          ? Colors.greenAccent // 활성화된 카드 색상
-                          : Colors.white, // 비활성화된 카드 색상
+                      color: isSelected ? Colors.greenAccent : Colors.white,
                       child: Container(
                         width: 200,
                         padding: const EdgeInsets.all(16.0),
@@ -86,7 +86,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               onPressed: selectedCardIndex != -1
                   ? () => _showConfirmationDialog(
                       context, cards[selectedCardIndex], cartItems)
-                  : null, // 카드가 선택되지 않으면 버튼 비활성화
+                  : null,
               style: ElevatedButton.styleFrom(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 80, vertical: 16),
@@ -123,10 +123,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(
+
+                Navigator.pushReplacementNamed(
                   context,
                   '/receipt',
-                  arguments: cartItems, // cartItems 전달
+                  arguments: {
+                    'cartItems': cartItems,
+                    'selectedCard': selectedCard,
+                  }, // 선택된 카드와 cartItems 전달
                 );
               },
               child: const Text("확인"),
