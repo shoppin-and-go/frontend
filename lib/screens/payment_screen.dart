@@ -5,10 +5,10 @@ class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key});
 
   @override
-  _PaymentScreenState createState() => _PaymentScreenState();
+  PaymentScreenState createState() => PaymentScreenState();
 }
 
-class _PaymentScreenState extends State<PaymentScreen> {
+class PaymentScreenState extends State<PaymentScreen> {
   int selectedCardIndex = -1; // 선택된 카드 인덱스를 추적하는 변수
 
   @override

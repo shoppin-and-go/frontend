@@ -122,7 +122,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
     );
 
     // 입력한 코드가 null이 아니고 비어 있지 않을 경우 해당 코드 반환
-    if (code != null && code.isNotEmpty) {
+    if (code != null && code.isNotEmpty && mounted) {
       Navigator.pop(context, code);
     }
   }

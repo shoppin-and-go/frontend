@@ -21,9 +21,9 @@ class ReceiptScreen extends StatelessWidget {
     final String purchaseTime = DateFormat('HH:mm').format(DateTime.now());
     const String purchaseLocation = '이마트 자양점'; // 구매 장소
 
-    return WillPopScope(
+    return PopScope(
       // 뒤로 가기 및 스와이프 동작을 비활성화
-      onWillPop: () async => false,
+      canPop: false,
       child: Scaffold(
         body: Padding(
           padding: const EdgeInsets.fromLTRB(16, 80, 16, 16),
