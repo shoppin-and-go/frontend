@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shoppin_and_go/widgets/cart_item.dart';
 
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key});
@@ -14,14 +15,13 @@ class PaymentScreenState extends State<PaymentScreen> {
   @override
   Widget build(BuildContext context) {
     // CartScreen에서 전달된 cartItems 받기
-    final List<Map<String, dynamic>> cartItems = ModalRoute.of(context)!
-        .settings
-        .arguments as List<Map<String, dynamic>>;
+    final List<CartItem> cartItems =
+        ModalRoute.of(context)!.settings.arguments as List<CartItem>;
 
     // 총 금액 계산
     final int totalAmount = cartItems.fold(
       0,
-      (sum, item) => sum + ((item['price'] as int) * (item['quantity'] as int)),
+      (sum, item) => sum + (item.price * item.quantity),
     );
 
     final List<String> cards = [
@@ -57,20 +57,17 @@ class PaymentScreenState extends State<PaymentScreen> {
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 8.0),
                     child: ListTile(
-                      // 상품 이미지가 null인 경우 기본 이미지 경로를 사용
                       leading: Image.asset(
-                        item['imagePath'] ?? 'assets/default.png', // 기본 이미지 경로
+                        item.imagePath,
                         width: 50,
                         height: 50,
                         fit: BoxFit.cover,
                       ),
-                      title: Text(item['name'] ??
-                          '상품 이름 없음'), // 상품 이름이 null인 경우 기본 텍스트 표시
-                      subtitle: Text(
-                          '수량: ${item['quantity'] ?? 0}'), // 수량이 null인 경우 0으로 표시
+                      title: Text(item.name),
+                      subtitle: Text('수량: ${item.quantity}'),
                       trailing: Text(
                         // 천 단위 쉼표가 포함된 가격 표시
-                        '₩${currencyFormat.format((item['price'] as int) * (item['quantity'] as int))}',
+                        '₩${currencyFormat.format(item.price * item.quantity)}',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -153,8 +150,8 @@ class PaymentScreenState extends State<PaymentScreen> {
   }
 
   // 결제 확인 다이얼로그
-  void _showConfirmationDialog(BuildContext context, String selectedCard,
-      List<Map<String, dynamic>> cartItems) {
+  void _showConfirmationDialog(
+      BuildContext context, String selectedCard, List<CartItem> cartItems) {
     showDialog(
       context: context,
       builder: (BuildContext context) {

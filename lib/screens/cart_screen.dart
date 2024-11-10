@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shoppin_and_go/widgets/cart_item.dart';
 import 'package:slide_to_act/slide_to_act.dart';
+import 'package:intl/intl.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
@@ -11,35 +12,27 @@ class CartScreen extends StatelessWidget {
 
     // CartItem 목록 생성
     final List<CartItem> cartItems = [
-      const CartItem(
+      CartItem(
         name: '펩시',
-        price: '1600',
-        count: '1',
+        price: 1600,
+        quantity: 1,
         imagePath: 'assets/pepsi.png',
       ),
-      const CartItem(
+      CartItem(
         name: '콘칩',
-        price: '1500',
-        count: '2',
+        price: 1500,
+        quantity: 2,
         imagePath: 'assets/cornchip.png',
       ),
     ];
 
-    // 장바구니 아이템 데이터를 ReceiptScreen에 전달할 수 있도록 Map 형식으로 변환
-    final List<Map<String, dynamic>> cartItemData = cartItems
-        .map((item) => {
-              'name': item.name,
-              'price': int.parse(item.price),
-              'quantity': int.parse(item.count),
-              'imagePath': item.imagePath,
-            })
-        .toList();
-
     // 총 금액 계산
-    final int totalAmount = cartItemData.fold(
+    final int totalAmount = cartItems.fold(
       0,
-      (sum, item) => (sum + (item['price'] * item["quantity"])).toInt(),
+      (sum, item) => sum + (item.price * item.quantity),
     );
+
+    final NumberFormat currencyFormat = NumberFormat('#,##0', 'ko_KR');
 
     return Scaffold(
       appBar: AppBar(
@@ -63,7 +56,7 @@ class CartScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '₩${totalAmount.toString()}',
+                    '₩${currencyFormat.format(totalAmount)}',
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -97,7 +90,7 @@ class CartScreen extends StatelessWidget {
                   Navigator.pushNamed(
                     context,
                     '/payment',
-                    arguments: cartItemData,
+                    arguments: cartItems,
                   );
                   return;
                 },
