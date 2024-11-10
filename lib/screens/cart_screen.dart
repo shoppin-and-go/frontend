@@ -9,36 +9,53 @@ class CartScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final String cartId = ModalRoute.of(context)!.settings.arguments as String;
 
+    // CartItem 목록 생성
+    final List<CartItem> cartItems = [
+      const CartItem(
+        name: '펩시',
+        price: '1600',
+        count: '1',
+        imagePath: 'assets/pepsi.png',
+      ),
+      const CartItem(
+        name: '콘칩',
+        price: '1500',
+        count: '2',
+        imagePath: 'assets/cornchip.png',
+      ),
+    ];
+
+    // 장바구니 아이템 데이터를 ReceiptScreen에 전달할 수 있도록 Map 형식으로 변환
+    final List<Map<String, dynamic>> cartItemData = cartItems
+        .map((item) => {
+              'name': item.name,
+              'price': int.parse(item.price),
+              'quantity': int.parse(item.count),
+              'imagePath': item.imagePath,
+            })
+        .toList();
+
+    // 총 금액 계산
+    final int totalAmount = cartItemData.fold(
+      0,
+      (sum, item) => (sum + (item['price'] * item["quantity"])).toInt(),
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: Text(cartId),
       ),
-      body: ListView(
-        children: const [
-          CartItem(
-            name: '펩시',
-            price: '1,600',
-            count: '1',
-            imagePath: 'assets/pepsi.png',
-          ),
-          CartItem(
-            name: '콘칩',
-            price: '1,500',
-            count: '1',
-            imagePath: 'assets/cornchip.png',
-          ),
-        ],
-      ),
+      body: ListView(children: cartItems),
       bottomNavigationBar: SizedBox(
         height: 150,
         child: Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.all(16.0),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  const Text(
                     '총 금액',
                     style: TextStyle(
                       fontSize: 14,
@@ -46,8 +63,8 @@ class CartScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '₩3,100',
-                    style: TextStyle(
+                    '₩${totalAmount.toString()}',
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.red,
@@ -76,7 +93,12 @@ class CartScreen extends StatelessWidget {
                 sliderRotate: false,
                 sliderButtonYOffset: -40,
                 onSubmit: () {
-                  // Navigator.pushNamed(context, '/payment');
+                  // 결제 화면에 cartItemData 전달
+                  Navigator.pushNamed(
+                    context,
+                    '/payment',
+                    arguments: cartItemData,
+                  );
                   return;
                 },
               ),
