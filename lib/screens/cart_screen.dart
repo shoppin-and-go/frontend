@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shoppin_and_go/widgets/cart_item.dart';
 import 'package:slide_to_act/slide_to_act.dart';
-import 'package:intl/intl.dart';
+import 'package:shoppin_and_go/main.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
@@ -12,27 +12,19 @@ class CartScreen extends StatelessWidget {
 
     // CartItem 목록 생성
     final List<CartItem> cartItems = [
-      CartItem(
+      const CartItem(
         name: '펩시',
         price: 1600,
         quantity: 1,
         imagePath: 'assets/pepsi.png',
       ),
-      CartItem(
+      const CartItem(
         name: '콘칩',
         price: 1500,
         quantity: 2,
         imagePath: 'assets/cornchip.png',
       ),
     ];
-
-    // 총 금액 계산
-    final int totalAmount = cartItems.fold(
-      0,
-      (sum, item) => sum + (item.price * item.quantity),
-    );
-
-    final NumberFormat currencyFormat = NumberFormat('#,##0', 'ko_KR');
 
     return Scaffold(
       appBar: AppBar(
@@ -56,7 +48,7 @@ class CartScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '₩${currencyFormat.format(totalAmount)}',
+                    formatToWon(calculateTotalAmount(cartItems)),
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,

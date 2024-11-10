@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shoppin_and_go/main.dart';
 import 'package:shoppin_and_go/widgets/cart_item.dart';
 
 class ReceiptScreen extends StatelessWidget {
@@ -12,14 +13,6 @@ class ReceiptScreen extends StatelessWidget {
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final List<CartItem> cartItems = args['cartItems']; // 장바구니 항목
     final String selectedCard = args['selectedCard']; // 선택된 카드 정보
-
-    // 총 결제 금액 계산
-    final int totalAmount = cartItems.fold(
-      0,
-      (sum, item) => sum + (item.price * item.quantity),
-    );
-
-    final NumberFormat currencyFormat = NumberFormat('#,##0', 'ko_KR');
 
     // 현재 날짜와 시간을 지정된 형식으로 가져오기
     final String purchaseDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
@@ -66,7 +59,7 @@ class ReceiptScreen extends StatelessWidget {
                       subtitle: Text('수량: ${item.quantity}'), // 항목 수량
                       trailing: Text(
                         // 항목 가격 표시
-                        '₩${currencyFormat.format(item.price * item.quantity)}',
+                        formatToWon(item.price * item.quantity),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     );
@@ -83,7 +76,7 @@ class ReceiptScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    '₩${currencyFormat.format(totalAmount)}',
+                    formatToWon(calculateTotalAmount(cartItems)),
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold),
                   ),

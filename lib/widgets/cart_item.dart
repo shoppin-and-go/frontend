@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:shoppin_and_go/main.dart';
 
 class CartItem extends StatelessWidget {
   final String name;
@@ -7,15 +7,13 @@ class CartItem extends StatelessWidget {
   final int quantity;
   final String imagePath;
 
-  CartItem({
+  const CartItem({
     super.key,
     required this.name,
     required this.price,
     required this.quantity,
     required this.imagePath,
   });
-
-  final NumberFormat currencyFormat = NumberFormat('#,##0', 'ko_KR');
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +40,7 @@ class CartItem extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '₩${currencyFormat.format(price)}',
+                  formatToWon(price),
                   style: const TextStyle(
                     fontSize: 14,
                     color: Colors.red,

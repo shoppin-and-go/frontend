@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:shoppin_and_go/main.dart';
 import 'package:shoppin_and_go/widgets/cart_item.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -18,20 +18,11 @@ class PaymentScreenState extends State<PaymentScreen> {
     final List<CartItem> cartItems =
         ModalRoute.of(context)!.settings.arguments as List<CartItem>;
 
-    // 총 금액 계산
-    final int totalAmount = cartItems.fold(
-      0,
-      (sum, item) => sum + (item.price * item.quantity),
-    );
-
     final List<String> cards = [
       '1번 카드',
       '2번 카드',
       '3번 카드',
     ];
-
-    // 가격 표시 형식을 위한 NumberFormat 설정 (천 단위 쉼표 추가)
-    final NumberFormat currencyFormat = NumberFormat('#,##0', 'ko_KR');
 
     return Scaffold(
       appBar: AppBar(
@@ -44,7 +35,7 @@ class PaymentScreenState extends State<PaymentScreen> {
           children: [
             // 총 금액 표시
             Text(
-              '총 금액: ₩${currencyFormat.format(totalAmount)}',
+              '총 금액: ${formatToWon(calculateTotalAmount(cartItems))}',
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16.0),
@@ -67,7 +58,7 @@ class PaymentScreenState extends State<PaymentScreen> {
                       subtitle: Text('수량: ${item.quantity}'),
                       trailing: Text(
                         // 천 단위 쉼표가 포함된 가격 표시
-                        '₩${currencyFormat.format(item.price * item.quantity)}',
+                        formatToWon(item.price * item.quantity),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
