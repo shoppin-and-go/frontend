@@ -85,34 +85,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
       counter++;
 
       await controller.pauseCamera(); // 첫 인식 후 카메라 정지
-
-      try {
-        const deviceId = 'test-device-id'; // 임시 디바이스 ID 사용
-        final response = await cartService.connectCart(
-          deviceId,
-          scanData.code!,
-        );
-
-        if (!mounted) return;
-        Navigator.pop(context,
-            response.result.connection.cartCode); // 스캔 완료 후 카트 코드 반환하며 화면 종료
-      } catch (e) {
-        if (!mounted) return;
-
-        String errorMessage = '알 수 없는 오류가 발생했습니다.';
-        if (e is CartNotFoundException) {
-          errorMessage = '존재하지 않는 카트입니다.';
-        } else if (e is DeviceAlreadyConnectedException) {
-          errorMessage = '이미 다른 카트와 연결되어 있습니다.';
-        }
-
-        // 에러 메시지 표시
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage)),
-        );
-
-        Navigator.pop(context);
-      }
+      await _tryConnectCart(scanData.code!);
     });
   }
 
@@ -146,9 +119,38 @@ class _QRScanScreenState extends State<QRScanScreen> {
       },
     );
 
-    // 입력한 코드가 null이 아니고 비어 있지 않을 경우 해당 코드 반환
+    // 입력한 코드가 null이 아니고 비어 있지 않을 경우 API 호출
     if (code != null && code.isNotEmpty && mounted) {
-      Navigator.pop(context, code);
+      await _tryConnectCart(code);
+    }
+  }
+
+  // 카트 연결 및 처리 함수
+  Future<void> _tryConnectCart(String code) async {
+    try {
+      const deviceId = 'test-device-id';
+      final response = await cartService.connectCart(
+        deviceId,
+        code,
+      );
+
+      if (!mounted) return;
+      Navigator.pop(context, response.result.connection.cartCode);
+    } catch (e) {
+      if (!mounted) return;
+
+      String errorMessage = '알 수 없는 오류가 발생했습니다.';
+      if (e is CartNotFoundException) {
+        errorMessage = '존재하지 않는 카트입니다.';
+      } else if (e is DeviceAlreadyConnectedException) {
+        errorMessage = '이미 다른 카트와 연결되어 있습니다.';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
+
+      Navigator.pop(context);
     }
   }
 
