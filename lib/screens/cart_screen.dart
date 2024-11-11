@@ -3,29 +3,78 @@ import 'package:shoppin_and_go/widgets/cart_item.dart';
 import 'package:slide_to_act/slide_to_act.dart';
 import 'package:shoppin_and_go/main.dart';
 import 'package:shoppin_and_go/services/cart_api_service.dart';
+import 'package:shoppin_and_go/services/device_id_service.dart';
+// import 'package:logger/logger.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  final cartService = CartApiService(
+      baseUrl: 'http://ec2-3-38-128-6.ap-northeast-2.compute.amazonaws.com');
+  List<CartItem> cartItems = [];
+  bool _isLoaded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isLoaded) {
+      final String cartId =
+          ModalRoute.of(context)!.settings.arguments as String;
+      // _registerTestInventory(cartId).then((_) async {
+      //   await _loadCartInventory(cartId);
+      //   _isLoaded = true;
+      // });
+      _loadCartInventory(cartId);
+      _isLoaded = true;
+    }
+  }
+
+  // 테스트용 재고 등록 함수
+  // Future<void> _registerTestInventory(String cartId) async {
+  //   try {
+  //     Logger().d('테스트용 재고 등록 중...');
+  //     await cartService.changeCartInventory(cartId, 'ramen-1', 3); // 라면 3개
+  //     await cartService.changeCartInventory(cartId, 'chip-2', 2); // 과자 2개
+  //     Logger().d('테스트용 재고 등록 완료');
+  //   } catch (e) {
+  //     Logger().d('테스트용 재고 등록 실패: $e');
+  //   }
+  // }
+
+  Future<void> _loadCartInventory(String cartId) async {
+    try {
+      final String cartId =
+          ModalRoute.of(context)!.settings.arguments as String;
+      final inventory =
+          await cartService.getCartInventory(DeviceIdService.deviceId, cartId);
+
+      setState(() {
+        cartItems = inventory.result.items
+            .map((item) => CartItem(
+                  name: item.name,
+                  price: item.price,
+                  quantity: item.quantity,
+                  imagePath: 'assets/logo.png', // 기본 이미지 사용
+                ))
+            .toList();
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('재고 정보를 불러오는데 실패했습니다: ${e.toString()}')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final String cartId = ModalRoute.of(context)!.settings.arguments as String;
-
-    // CartItem 목록 생성
-    final List<CartItem> cartItems = [
-      const CartItem(
-        name: '펩시',
-        price: 1600,
-        quantity: 1,
-        imagePath: 'assets/pepsi.png',
-      ),
-      const CartItem(
-        name: '콘칩',
-        price: 1500,
-        quantity: 2,
-        imagePath: 'assets/cornchip.png',
-      ),
-    ];
 
     return PopScope(
       canPop: false,
@@ -123,10 +172,8 @@ class CartScreen extends StatelessWidget {
             ),
             TextButton(
               onPressed: () async {
-                await CartApiService(
-                        baseUrl:
-                            'http://ec2-3-38-128-6.ap-northeast-2.compute.amazonaws.com')
-                    .disconnectFromAllCarts('test-device-id'); // 임시 디바이스 ID
+                await cartService
+                    .disconnectFromAllCarts(DeviceIdService.deviceId);
                 if (context.mounted) {
                   Navigator.pop(context, true);
                 }
