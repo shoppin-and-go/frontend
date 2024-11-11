@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:shoppin_and_go/services/cart_api_service.dart';
+import 'package:shoppin_and_go/models/exceptions.dart';
 
 class QRScanScreen extends StatefulWidget {
   const QRScanScreen({super.key});
@@ -13,6 +15,10 @@ class _QRScanScreenState extends State<QRScanScreen> {
   Barcode? result;
   QRViewController? controller;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+
+  // CartApiService 인스턴스 생성
+  final cartService = CartApiService(
+      baseUrl: 'http://ec2-3-38-128-6.ap-northeast-2.compute.amazonaws.com');
 
   // 플랫폼에 따라 카메라 제어 (안드로이드: pause, iOS: resume)
   @override
@@ -71,23 +77,43 @@ class _QRScanScreenState extends State<QRScanScreen> {
 
   // QR 스캐너 생성 시 호출되는 함수
   void _onQRViewCreated(QRViewController controller) {
-    setState(() {
-      this.controller = controller;
-    });
+    this.controller = controller;
 
     int counter = 0; // 여러 QR 인식 방지용 카운터
     controller.scannedDataStream.listen((scanData) async {
+      if (counter > 0 || scanData.code == null) return;
       counter++;
+
       await controller.pauseCamera(); // 첫 인식 후 카메라 정지
 
-      setState(() {
-        result = scanData; // 스캔 결과 저장
-        String url = result!.code.toString();
+      try {
+        const deviceId = 'test-device-id'; // 임시 디바이스 ID 사용
+        final response = await cartService.connectCart(
+          deviceId,
+          scanData.code!,
+        );
 
-        if (counter == 1) {
-          Navigator.pop(context, url); // 스캔 완료 후 URL 반환하며 화면 종료
+        if (!mounted) return;
+        Navigator.pop(context,
+            response.result.connection.cartCode); // 스캔 완료 후 카트 코드 반환하며 화면 종료
+      } catch (e) {
+        if (!mounted) return;
+
+        String errorMessage = '알 수 없는 오류가 발생했습니다.';
+        if (e is CartNotFoundException) {
+          errorMessage = '존재하지 않는 카트입니다.';
+        } else if (e is DeviceAlreadyConnectedException) {
+          errorMessage = '이미 다른 카트와 연결되어 있습니다.';
         }
-      });
+
+        // 에러 메시지 표시
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage)),
+        );
+
+        counter = 0; // 카운터 리셋
+        await controller.resumeCamera(); // 카메라 재시작하여 재시도 가능하게 함
+      }
     });
   }
 
