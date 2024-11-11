@@ -143,7 +143,11 @@ class _QRScanScreenState extends State<QRScanScreen> {
       if (e is CartNotFoundException) {
         errorMessage = '존재하지 않는 카트입니다.';
       } else if (e is DeviceAlreadyConnectedException) {
-        errorMessage = '이미 다른 카트와 연결되어 있습니다.';
+        if (e.message.contains('This device')) {
+          errorMessage = '이미 다른 카트와 연결되어 있습니다.';
+        } else {
+          errorMessage = '이미 다른 디바이스와 연결되어 있습니다.';
+        }
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
