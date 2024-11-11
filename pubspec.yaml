@@ -34,6 +34,7 @@ dependencies:
   slide_to_act: ^2.0.2
   intl: ^0.17.0
   http: ^1.2.0
+  stomp_dart_client: ^0.4.4
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -68,8 +69,16 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/logo.png
-    - assets/pepsi.png
-    - assets/cornchip.png
+    - assets/게토레이.png
+    - assets/불닭볶음면.png
+    - assets/새우깡.png
+    - assets/신라면.png
+    - assets/짜파게티.png
+    - assets/코카콜라.png
+    - assets/콘칩.png
+    - assets/파워에이드.png
+    - assets/펩시.png
+    - assets/포테이토칩.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

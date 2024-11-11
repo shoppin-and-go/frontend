@@ -4,7 +4,10 @@ import 'package:slide_to_act/slide_to_act.dart';
 import 'package:shoppin_and_go/main.dart';
 import 'package:shoppin_and_go/services/cart_api_service.dart';
 import 'package:shoppin_and_go/services/device_id_service.dart';
-// import 'package:logger/logger.dart';
+import 'package:stomp_dart_client/stomp.dart';
+import 'package:stomp_dart_client/stomp_config.dart';
+import 'package:stomp_dart_client/stomp_frame.dart';
+import 'package:logger/logger.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -18,20 +21,62 @@ class _CartScreenState extends State<CartScreen> {
       baseUrl: 'http://ec2-3-38-128-6.ap-northeast-2.compute.amazonaws.com');
   List<CartItem> cartItems = [];
   bool _isLoaded = false;
+  late StompClient stompClient;
+  String? currentCartId;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeStompClient();
+  }
+
+  void _initializeStompClient() {
+    const wsUrl =
+        'http://ec2-3-38-128-6.ap-northeast-2.compute.amazonaws.com/ws';
+    Logger().d('웹소켓 연결 시작: $wsUrl');
+
+    stompClient = StompClient(
+      config: StompConfig.SockJS(
+        url: wsUrl,
+        onConnect: (StompFrame frame) {
+          Logger().d('웹소켓 연결됨');
+          stompClient.subscribe(
+            destination: '/queue/device/${DeviceIdService.deviceId}',
+            callback: (frame) async {
+              Logger().d('재고 변경 이벤트 수신');
+              if (currentCartId != null && mounted) {
+                try {
+                  await _loadCartInventory(currentCartId!);
+                } catch (e) {
+                  Logger().e('재고 로드 실패: $e');
+                }
+              }
+            },
+          );
+        },
+      ),
+    );
+    stompClient.activate();
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isLoaded) {
-      final String cartId =
-          ModalRoute.of(context)!.settings.arguments as String;
+      currentCartId = ModalRoute.of(context)!.settings.arguments as String;
       // _registerTestInventory(cartId).then((_) async {
       //   await _loadCartInventory(cartId);
       //   _isLoaded = true;
       // });
-      _loadCartInventory(cartId);
+      _loadCartInventory(currentCartId!);
       _isLoaded = true;
     }
+  }
+
+  @override
+  void dispose() {
+    stompClient.deactivate();
+    super.dispose();
   }
 
   // 테스트용 재고 등록 함수
@@ -48,10 +93,9 @@ class _CartScreenState extends State<CartScreen> {
 
   Future<void> _loadCartInventory(String cartId) async {
     try {
-      final String cartId =
-          ModalRoute.of(context)!.settings.arguments as String;
       final inventory =
           await cartService.getCartInventory(DeviceIdService.deviceId, cartId);
+      if (!mounted) return;
 
       setState(() {
         cartItems = inventory.result.items
@@ -59,11 +103,12 @@ class _CartScreenState extends State<CartScreen> {
                   name: item.name,
                   price: item.price,
                   quantity: item.quantity,
-                  imagePath: 'assets/logo.png', // 기본 이미지 사용
+                  imagePath: 'assets/${item.name}.png',
                 ))
             .toList();
       });
     } catch (e) {
+      Logger().e('재고 로드 실패: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('재고 정보를 불러오는데 실패했습니다: ${e.toString()}')),
@@ -74,8 +119,6 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final String cartId = ModalRoute.of(context)!.settings.arguments as String;
-
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
@@ -89,9 +132,14 @@ class _CartScreenState extends State<CartScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(cartId),
+          title: Text(currentCartId ?? ''),
         ),
-        body: ListView(children: cartItems),
+        body: cartItems.isEmpty
+            ? const Center(child: Text('장바구니가 비어있습니다'))
+            : ListView.builder(
+                itemCount: cartItems.length,
+                itemBuilder: (context, index) => cartItems[index],
+              ),
         bottomNavigationBar: SizedBox(
           height: 150,
           child: Column(
