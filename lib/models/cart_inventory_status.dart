@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class CartInventoryItem {
   final String name;
   final int quantity;
@@ -11,7 +13,7 @@ class CartInventoryItem {
 
   factory CartInventoryItem.fromJson(Map<String, dynamic> json) {
     return CartInventoryItem(
-      name: json['name'] as String,
+      name: utf8.decode(json['name'].toString().codeUnits),
       quantity: json['quantity'] as int,
       price: json['price'] as int,
     );
