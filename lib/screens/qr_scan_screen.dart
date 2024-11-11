@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:shoppin_and_go/services/cart_api_service.dart';
 import 'package:shoppin_and_go/models/exceptions.dart';
+import 'package:shoppin_and_go/services/device_id_service.dart';
 
 class QRScanScreen extends StatefulWidget {
   const QRScanScreen({super.key});
@@ -128,9 +129,8 @@ class _QRScanScreenState extends State<QRScanScreen> {
   // 카트 연결 및 처리 함수
   Future<void> _tryConnectCart(String code) async {
     try {
-      const deviceId = 'test-device-id';
       final response = await cartService.connectCart(
-        deviceId,
+        DeviceIdService.deviceId,
         code,
       );
 

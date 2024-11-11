@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:shoppin_and_go/services/cart_api_service.dart';
 import 'package:shoppin_and_go/models/exceptions.dart';
 

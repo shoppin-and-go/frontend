@@ -7,6 +7,8 @@ import 'package:shoppin_and_go/screens/cart_screen.dart';
 import 'package:shoppin_and_go/screens/payment_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:shoppin_and_go/widgets/cart_item.dart';
+import 'package:shoppin_and_go/services/device_id_service.dart';
+import 'package:logger/logger.dart';
 
 // 총액 계산 함수
 int calculateTotalAmount(List<CartItem> items) {
@@ -21,7 +23,10 @@ String formatToWon(int amount) {
   return '₩${NumberFormat('#,##0', 'ko_KR').format(amount)}';
 }
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Flutter 엔진 초기화
+  await DeviceIdService.initialize(); // 디바이스 ID 초기화
+  Logger().d('디바이스ID: ${DeviceIdService.deviceId}');
   runApp(const MyApp());
 }
 
