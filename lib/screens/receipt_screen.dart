@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shoppin_and_go/main.dart';
+import 'package:shoppin_and_go/widgets/cart_item.dart';
+import 'package:shoppin_and_go/services/device_id_service.dart';
+import 'package:shoppin_and_go/services/cart_api_service.dart';
 
 class ReceiptScreen extends StatelessWidget {
   const ReceiptScreen({super.key});
@@ -9,21 +13,20 @@ class ReceiptScreen extends StatelessWidget {
     // PaymentScreen에서 전달된 arguments 가져오기
     final Map<String, dynamic> args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    final List<Map<String, dynamic>> cartItems = args['cartItems']; // 장바구니 항목
+    final List<CartItem> cartItems = args['cartItems']; // 장바구니 항목
     final String selectedCard = args['selectedCard']; // 선택된 카드 정보
-
-    // 총 결제 금액 계산
-    final double totalAmount = cartItems.fold(
-        0, (sum, item) => sum + (item['price'] * item['quantity']));
 
     // 현재 날짜와 시간을 지정된 형식으로 가져오기
     final String purchaseDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
     final String purchaseTime = DateFormat('HH:mm').format(DateTime.now());
     const String purchaseLocation = '이마트 자양점'; // 구매 장소
 
-    return WillPopScope(
+    final cartService = CartApiService(
+        baseUrl: 'http://ec2-3-38-128-6.ap-northeast-2.compute.amazonaws.com');
+
+    return PopScope(
       // 뒤로 가기 및 스와이프 동작을 비활성화
-      onWillPop: () async => false,
+      canPop: false,
       child: Scaffold(
         body: Padding(
           padding: const EdgeInsets.fromLTRB(16, 80, 16, 16),
@@ -57,11 +60,11 @@ class ReceiptScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final item = cartItems[index];
                     return ListTile(
-                      title: Text(item['name']), // 항목 이름
-                      subtitle: Text('수량: ${item['quantity']}'), // 항목 수량
+                      title: Text(item.name), // 항목 이름
+                      subtitle: Text('수량: ${item.quantity}'), // 항목 수량
                       trailing: Text(
                         // 항목 가격 표시
-                        '₩${(item['price'] * item['quantity']).toStringAsFixed(0)}',
+                        formatToWon(item.price * item.quantity),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     );
@@ -78,7 +81,7 @@ class ReceiptScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    '₩${totalAmount.toStringAsFixed(0)}',
+                    formatToWon(calculateTotalAmount(cartItems)),
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold),
                   ),
@@ -88,8 +91,15 @@ class ReceiptScreen extends StatelessWidget {
               // 확인 버튼 (클릭 시 '/register' 화면으로 이동)
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/register');
+                  onPressed: () async {
+                    await cartService
+                        .disconnectFromAllCarts(DeviceIdService.deviceId);
+                    if (!context.mounted) return;
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      '/register',
+                      (route) => false,
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(

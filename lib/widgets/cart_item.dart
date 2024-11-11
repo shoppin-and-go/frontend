@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:shoppin_and_go/main.dart';
 
 class CartItem extends StatelessWidget {
   final String name;
-  final String price;
-  final String count;
+  final int price;
+  final int quantity;
   final String imagePath;
 
   const CartItem({
     super.key,
     required this.name,
     required this.price,
-    required this.count,
+    required this.quantity,
     required this.imagePath,
   });
 
@@ -39,7 +40,7 @@ class CartItem extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '₩$price',
+                  formatToWon(price),
                   style: const TextStyle(
                     fontSize: 14,
                     color: Colors.red,
@@ -49,7 +50,7 @@ class CartItem extends StatelessWidget {
             ),
           ),
           Text(
-            '수량 : $count',
+            '수량: $quantity',
             style: const TextStyle(fontSize: 14),
           ),
         ],

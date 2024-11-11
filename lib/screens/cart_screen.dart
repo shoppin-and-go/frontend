@@ -1,111 +1,245 @@
 import 'package:flutter/material.dart';
 import 'package:shoppin_and_go/widgets/cart_item.dart';
 import 'package:slide_to_act/slide_to_act.dart';
+import 'package:shoppin_and_go/main.dart';
+import 'package:shoppin_and_go/services/cart_api_service.dart';
+import 'package:shoppin_and_go/services/device_id_service.dart';
+import 'package:stomp_dart_client/stomp.dart';
+import 'package:stomp_dart_client/stomp_config.dart';
+import 'package:stomp_dart_client/stomp_frame.dart';
+import 'package:logger/logger.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final String cartId = ModalRoute.of(context)!.settings.arguments as String;
+  State<CartScreen> createState() => _CartScreenState();
+}
 
-    // CartItem 목록 생성
-    final List<CartItem> cartItems = [
-      const CartItem(
-        name: '펩시',
-        price: '1600',
-        count: '1',
-        imagePath: 'assets/pepsi.png',
+class _CartScreenState extends State<CartScreen> {
+  final cartService = CartApiService(
+      baseUrl: 'http://ec2-3-38-128-6.ap-northeast-2.compute.amazonaws.com');
+  List<CartItem> cartItems = [];
+  bool _isLoaded = false;
+  late StompClient stompClient;
+  String? currentCartId;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeStompClient();
+  }
+
+  void _initializeStompClient() {
+    const wsUrl =
+        'http://ec2-3-38-128-6.ap-northeast-2.compute.amazonaws.com/ws';
+    Logger().d('웹소켓 연결 시작: $wsUrl');
+
+    stompClient = StompClient(
+      config: StompConfig.SockJS(
+        url: wsUrl,
+        onConnect: (StompFrame frame) {
+          Logger().d('웹소켓 연결됨');
+          stompClient.subscribe(
+            destination: '/queue/device/${DeviceIdService.deviceId}',
+            callback: (frame) async {
+              Logger().d('재고 변경 이벤트 수신');
+              if (currentCartId != null && mounted) {
+                try {
+                  await _loadCartInventory(currentCartId!);
+                } catch (e) {
+                  Logger().e('재고 로드 실패: $e');
+                }
+              }
+            },
+          );
+        },
       ),
-      const CartItem(
-        name: '콘칩',
-        price: '1500',
-        count: '2',
-        imagePath: 'assets/cornchip.png',
-      ),
-    ];
-
-    // 장바구니 아이템 데이터를 ReceiptScreen에 전달할 수 있도록 Map 형식으로 변환
-    final List<Map<String, dynamic>> cartItemData = cartItems
-        .map((item) => {
-              'name': item.name,
-              'price': int.parse(item.price),
-              'quantity': int.parse(item.count),
-              'imagePath': item.imagePath,
-            })
-        .toList();
-
-    // 총 금액 계산
-    final int totalAmount = cartItemData.fold(
-      0,
-      (sum, item) => (sum + (item['price'] * item["quantity"])).toInt(),
     );
+    stompClient.activate();
+  }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(cartId),
-      ),
-      body: ListView(children: cartItems),
-      bottomNavigationBar: SizedBox(
-        height: 150,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    '총 금액',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.black54,
-                    ),
-                  ),
-                  Text(
-                    '₩${totalAmount.toString()}',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red,
-                    ),
-                  ),
-                ],
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isLoaded) {
+      currentCartId = ModalRoute.of(context)!.settings.arguments as String;
+      // _registerTestInventory(cartId).then((_) async {
+      //   await _loadCartInventory(cartId);
+      //   _isLoaded = true;
+      // });
+      _loadCartInventory(currentCartId!);
+      _isLoaded = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    stompClient.deactivate();
+    super.dispose();
+  }
+
+  // 테스트용 재고 등록 함수
+  // Future<void> _registerTestInventory(String cartId) async {
+  //   try {
+  //     Logger().d('테스트용 재고 등록 중...');
+  //     await cartService.changeCartInventory(cartId, 'ramen-1', 3); // 라면 3개
+  //     await cartService.changeCartInventory(cartId, 'chip-2', 2); // 과자 2개
+  //     Logger().d('테스트용 재고 등록 완료');
+  //   } catch (e) {
+  //     Logger().d('테스트용 재고 등록 실패: $e');
+  //   }
+  // }
+
+  Future<void> _loadCartInventory(String cartId) async {
+    try {
+      final inventory =
+          await cartService.getCartInventory(DeviceIdService.deviceId, cartId);
+      if (!mounted) return;
+
+      setState(() {
+        cartItems = inventory.result.items
+            .map((item) => CartItem(
+                  name: item.name,
+                  price: item.price,
+                  quantity: item.quantity,
+                  imagePath: 'assets/${item.name}.png',
+                ))
+            .toList();
+      });
+    } catch (e) {
+      Logger().e('재고 로드 실패: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('재고 정보를 불러오는데 실패했습니다: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final shouldPop = await _showExitConfirmDialog(context);
+        if (shouldPop) {
+          if (context.mounted) {
+            Navigator.pop(context);
+          }
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(currentCartId ?? ''),
+          // actions: [
+          //   IconButton(
+          //     onPressed: () {
+          //       _registerTestInventory(currentCartId!);
+          //     },
+          //     icon: const Icon(Icons.refresh),
+          //   ),
+          // ],
+        ),
+        body: cartItems.isEmpty
+            ? const Center(child: Text('장바구니가 비어있습니다'))
+            : ListView.builder(
+                itemCount: cartItems.length,
+                itemBuilder: (context, index) => cartItems[index],
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: SlideAction(
-                sliderButtonIcon: Image.asset(
-                  'assets/logo.png',
-                  width: 100,
-                  height: 100,
+        bottomNavigationBar: SizedBox(
+          height: 150,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '총 금액',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    Text(
+                      formatToWon(calculateTotalAmount(cartItems)),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
                 ),
-                text: '밀어서 결제하기',
-                textStyle: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-                outerColor: const Color.fromRGBO(0xDB, 0x1E, 0x17, 1),
-                innerColor: Colors.transparent,
-                borderRadius: 36,
-                sliderRotate: false,
-                sliderButtonYOffset: -40,
-                onSubmit: () {
-                  // 결제 화면에 cartItemData 전달
-                  Navigator.pushNamed(
-                    context,
-                    '/payment',
-                    arguments: cartItemData,
-                  );
-                  return;
-                },
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: SlideAction(
+                  sliderButtonIcon: Image.asset(
+                    'assets/logo.png',
+                    width: 100,
+                    height: 100,
+                  ),
+                  text: '밀어서 결제하기',
+                  textStyle: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  outerColor: const Color.fromRGBO(0xDB, 0x1E, 0x17, 1),
+                  innerColor: Colors.transparent,
+                  borderRadius: 36,
+                  sliderRotate: false,
+                  sliderButtonYOffset: -40,
+                  onSubmit: () {
+                    // 결제 화면에 cartItemData 전달
+                    Navigator.pushNamed(
+                      context,
+                      '/payment',
+                      arguments: cartItems,
+                    );
+                    return;
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Future<bool> _showExitConfirmDialog(BuildContext context) async {
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('카트와의 연결이 해제됩니다'),
+          content: const Text('정말 나가시겠습니까?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, false); // 다이얼로그 닫기, 화면 유지
+              },
+              child: const Text('계속 쇼핑하기'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await cartService
+                    .disconnectFromAllCarts(DeviceIdService.deviceId);
+                if (context.mounted) {
+                  Navigator.pop(context, true);
+                }
+              },
+              child: const Text('나가기'),
+            ),
+          ],
+        );
+      },
+    );
+    return shouldPop ?? false;
   }
 }
