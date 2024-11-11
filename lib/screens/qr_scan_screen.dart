@@ -111,8 +111,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
           SnackBar(content: Text(errorMessage)),
         );
 
-        counter = 0; // 카운터 리셋
-        await controller.resumeCamera(); // 카메라 재시작하여 재시도 가능하게 함
+        Navigator.pop(context);
       }
     });
   }
