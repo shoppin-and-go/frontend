@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shoppin_and_go/main.dart';
 import 'package:shoppin_and_go/widgets/cart_item.dart';
+import 'package:shoppin_and_go/services/device_id_service.dart';
+import 'package:shoppin_and_go/services/cart_api_service.dart';
 
 class ReceiptScreen extends StatelessWidget {
   const ReceiptScreen({super.key});
@@ -18,6 +20,9 @@ class ReceiptScreen extends StatelessWidget {
     final String purchaseDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
     final String purchaseTime = DateFormat('HH:mm').format(DateTime.now());
     const String purchaseLocation = '이마트 자양점'; // 구매 장소
+
+    final cartService = CartApiService(
+        baseUrl: 'http://ec2-3-38-128-6.ap-northeast-2.compute.amazonaws.com');
 
     return PopScope(
       // 뒤로 가기 및 스와이프 동작을 비활성화
@@ -86,8 +91,15 @@ class ReceiptScreen extends StatelessWidget {
               // 확인 버튼 (클릭 시 '/register' 화면으로 이동)
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/register');
+                  onPressed: () async {
+                    await cartService
+                        .disconnectFromAllCarts(DeviceIdService.deviceId);
+                    if (!context.mounted) return;
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      '/register',
+                      (route) => false,
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(

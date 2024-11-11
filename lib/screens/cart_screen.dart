@@ -133,6 +133,14 @@ class _CartScreenState extends State<CartScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(currentCartId ?? ''),
+          // actions: [
+          //   IconButton(
+          //     onPressed: () {
+          //       _registerTestInventory(currentCartId!);
+          //     },
+          //     icon: const Icon(Icons.refresh),
+          //   ),
+          // ],
         ),
         body: cartItems.isEmpty
             ? const Center(child: Text('장바구니가 비어있습니다'))
