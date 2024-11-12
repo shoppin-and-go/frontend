@@ -92,6 +92,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
 
   // 사용자가 직접 코드를 입력할 수 있는 다이얼로그
   Future<void> _manualCodeInput() async {
+    bool easterEgg = false;
     String? code = await showDialog<String>(
       context: context,
       builder: (BuildContext context) {
@@ -111,6 +112,9 @@ class _QRScanScreenState extends State<QRScanScreen> {
             ),
             TextButton(
               onPressed: () {
+                if (textController.text == 'disconnect') {
+                  easterEgg = true;
+                }
                 Navigator.pop(context, null); // 취소 시 null 반환
               },
               child: const Text("취소"),
@@ -120,6 +124,19 @@ class _QRScanScreenState extends State<QRScanScreen> {
       },
     );
 
+    // 현재 디바이스와 연결된 카트를 해제
+    if (easterEgg) {
+      final cartService = CartApiService(
+          baseUrl:
+              'http://ec2-3-38-128-6.ap-northeast-2.compute.amazonaws.com');
+      await cartService.disconnectFromAllCarts(DeviceIdService.deviceId);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('${DeviceIdService.deviceId}와의 연결을 해제했습니다.')),
+        );
+    }
     // 입력한 코드가 null이 아니고 비어 있지 않을 경우 API 호출
     if (code != null && code.isNotEmpty && mounted) {
       await _tryConnectCart(code);
