@@ -23,7 +23,7 @@ class _CartScreenState extends State<CartScreen> {
   bool _isLoaded = false;
   late StompClient stompClient;
   String? currentCartId;
-  // final bool _isFirstInventory = true;
+  // bool _isFirstInventory = true;
 
   @override
   void initState() {
@@ -146,12 +146,29 @@ class _CartScreenState extends State<CartScreen> {
           //     icon: const Icon(Icons.refresh),
           //   ),
           // ],
+          backgroundColor: Colors.white,
+          elevation: 4,
+          shadowColor: Colors.black54,
         ),
         body: cartItems.isEmpty
             ? const Center(child: Text('장바구니가 비어있습니다'))
-            : ListView.builder(
-                itemCount: cartItems.length,
-                itemBuilder: (context, index) => cartItems[index],
+            : Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      spreadRadius: 0,
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: cartItems.length,
+                  itemBuilder: (context, index) => cartItems[index],
+                ),
               ),
         bottomNavigationBar: SizedBox(
           height: 150,
