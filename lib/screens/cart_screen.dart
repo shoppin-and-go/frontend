@@ -131,7 +131,11 @@ class _CartScreenState extends State<CartScreen> {
         final shouldPop = await _showExitConfirmDialog(context);
         if (shouldPop) {
           if (context.mounted) {
-            Navigator.pop(context);
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/register',
+              (route) => false,
+            );
           }
         }
       },
