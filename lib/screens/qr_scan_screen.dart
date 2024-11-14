@@ -96,7 +96,9 @@ class _QRScanScreenState extends State<QRScanScreen> {
     String? code = await showDialog<String>(
       context: context,
       builder: (BuildContext context) {
-        TextEditingController textController = TextEditingController();
+        TextEditingController textController = TextEditingController(
+          text: 'cart-',
+        );
         return AlertDialog(
           title: const Text("코드 입력"),
           content: TextField(

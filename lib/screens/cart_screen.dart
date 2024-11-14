@@ -23,6 +23,7 @@ class _CartScreenState extends State<CartScreen> {
   bool _isLoaded = false;
   late StompClient stompClient;
   String? currentCartId;
+  // bool _isFirstInventory = true;
 
   @override
   void initState() {
@@ -64,10 +65,6 @@ class _CartScreenState extends State<CartScreen> {
     super.didChangeDependencies();
     if (!_isLoaded) {
       currentCartId = ModalRoute.of(context)!.settings.arguments as String;
-      // _registerTestInventory(cartId).then((_) async {
-      //   await _loadCartInventory(cartId);
-      //   _isLoaded = true;
-      // });
       _loadCartInventory(currentCartId!);
       _isLoaded = true;
     }
@@ -80,14 +77,21 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   // 테스트용 재고 등록 함수
-  // Future<void> _registerTestInventory(String cartId) async {
+  // Future<void> _registerTestInventory() async {
+  //   final inventorySet = _isFirstInventory
+  //       ? {'ramen-1': 2, 'chip-2': 1}
+  //       : {'ramen-1': -2, 'chip-2': 1};
+
   //   try {
-  //     Logger().d('테스트용 재고 등록 중...');
-  //     await cartService.changeCartInventory(cartId, 'ramen-1', 3); // 라면 3개
-  //     await cartService.changeCartInventory(cartId, 'chip-2', 2); // 과자 2개
-  //     Logger().d('테스트용 재고 등록 완료');
+  //     for (final entry in inventorySet.entries) {
+  //       await cartService.changeCartInventory(
+  //           currentCartId!, entry.key, entry.value);
+  //     }
+  //     _isFirstInventory = !_isFirstInventory;
+
+  //     await _loadCartInventory(currentCartId!);
   //   } catch (e) {
-  //     Logger().d('테스트용 재고 등록 실패: $e');
+  //     Logger().e('테스트 재고 등록 실패: $e');
   //   }
   // }
 
@@ -99,6 +103,7 @@ class _CartScreenState extends State<CartScreen> {
 
       setState(() {
         cartItems = inventory.result.items
+            .where((item) => item.quantity > 0)
             .map((item) => CartItem(
                   name: item.name,
                   price: item.price,
@@ -126,7 +131,11 @@ class _CartScreenState extends State<CartScreen> {
         final shouldPop = await _showExitConfirmDialog(context);
         if (shouldPop) {
           if (context.mounted) {
-            Navigator.pop(context);
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/register',
+              (route) => false,
+            );
           }
         }
       },
@@ -136,17 +145,34 @@ class _CartScreenState extends State<CartScreen> {
           // actions: [
           //   IconButton(
           //     onPressed: () {
-          //       _registerTestInventory(currentCartId!);
+          //       _registerTestInventory();
           //     },
           //     icon: const Icon(Icons.refresh),
           //   ),
           // ],
+          backgroundColor: Colors.white,
+          elevation: 4,
+          shadowColor: Colors.black54,
         ),
         body: cartItems.isEmpty
             ? const Center(child: Text('장바구니가 비어있습니다'))
-            : ListView.builder(
-                itemCount: cartItems.length,
-                itemBuilder: (context, index) => cartItems[index],
+            : Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      spreadRadius: 0,
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: cartItems.length,
+                  itemBuilder: (context, index) => cartItems[index],
+                ),
               ),
         bottomNavigationBar: SizedBox(
           height: 150,
