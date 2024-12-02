@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v3
@@ -19,7 +19,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.16.5'
+          flutter-version: '3.24.5'
           channel: 'stable'
       
       - name: Enable web
@@ -32,7 +32,8 @@ jobs:
         run: |
           flutter build web \
             --release \
-            --base-href "/${{ github.event.repository.name }}/"
+            --base-href "/${{ github.event.repository.name }}/" \
+            --verbose
         
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
