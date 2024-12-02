@@ -17,8 +17,7 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  final cartService = CartApiService(
-      baseUrl: 'http://ec2-3-38-128-6.ap-northeast-2.compute.amazonaws.com');
+  final cartService = CartApiService();
   List<CartItem> cartItems = [];
   bool _isLoaded = false;
   late StompClient stompClient;
@@ -32,8 +31,7 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   void _initializeStompClient() {
-    const wsUrl =
-        'http://ec2-3-38-128-6.ap-northeast-2.compute.amazonaws.com/ws';
+    const wsUrl = '${CartApiService.baseUrl}/ws';
     Logger().d('웹소켓 연결 시작: $wsUrl');
 
     stompClient = StompClient(

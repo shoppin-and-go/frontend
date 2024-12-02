@@ -6,9 +6,10 @@ import 'package:shoppin_and_go/models/cart_connection.dart';
 import 'package:shoppin_and_go/models/cart_inventory_status.dart';
 
 class CartApiService {
-  final String baseUrl;
+  static const baseUrl =
+      'http://ec2-3-38-128-6.ap-northeast-2.compute.amazonaws.com';
 
-  CartApiService({required this.baseUrl});
+  CartApiService();
 
   Future<CartConnectionResponse> connectCart(
       String deviceId, String cartCode) async {

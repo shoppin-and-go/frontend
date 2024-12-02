@@ -4,8 +4,7 @@ import 'package:shoppin_and_go/services/cart_api_service.dart';
 import 'package:shoppin_and_go/models/exceptions.dart';
 
 void main() async {
-  final service = CartApiService(
-      baseUrl: 'http://ec2-3-38-128-6.ap-northeast-2.compute.amazonaws.com');
+  final service = CartApiService();
 
   const deviceId = 'test-device-id';
   const invalidCartCode = 'cart-3';

@@ -1,6 +1,4 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:shoppin_and_go/services/cart_api_service.dart';
 import 'package:shoppin_and_go/models/exceptions.dart';
 import 'package:shoppin_and_go/services/device_id_service.dart';
@@ -9,27 +7,11 @@ class QRScanScreen extends StatefulWidget {
   const QRScanScreen({super.key});
 
   @override
-  State<StatefulWidget> createState() => _QRScanScreenState();
+  State<QRScanScreen> createState() => _QRScanScreenState();
 }
 
 class _QRScanScreenState extends State<QRScanScreen> {
-  Barcode? result;
-  QRViewController? controller;
-  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-
-  // CartApiService 인스턴스 생성
-  final cartService = CartApiService(
-      baseUrl: 'http://ec2-3-38-128-6.ap-northeast-2.compute.amazonaws.com');
-
-  // 플랫폼에 따라 카메라 제어 (안드로이드: pause, iOS: resume)
-  @override
-  void reassemble() {
-    super.reassemble();
-    if (Platform.isAndroid) {
-      controller!.pauseCamera();
-    }
-    controller!.resumeCamera();
-  }
+  final cartService = CartApiService();
 
   @override
   Widget build(BuildContext context) {
@@ -64,30 +46,105 @@ class _QRScanScreenState extends State<QRScanScreen> {
         ? 150.0
         : 300.0;
 
-    return QRView(
-      key: qrKey,
-      onQRViewCreated: _onQRViewCreated, // QRView가 생성되면 _onQRViewCreated 실행
-      overlay: QrScannerOverlayShape(
-          borderColor: const Color.fromRGBO(0xDB, 0x1E, 0x17, 1), // 스캐너 테두리 색상
-          borderRadius: 10, // 테두리 둥근 정도
-          borderLength: 30, // 테두리 길이
-          borderWidth: 10, // 테두리 너비
-          cutOutSize: scanArea), // 스캔 영역 크기
+    return Stack(
+      children: [
+        // 반투명한 검정색 배경
+        Container(
+          color: Colors.black54,
+        ),
+        Center(
+          child: Container(
+            width: scanArea,
+            height: scanArea,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Stack(
+                children: [
+                  // 좌앙 텍스트 추가
+                  const Center(
+                    child: Text(
+                      "카메라를 사용할 수 없습니다.\n직접 코드 입력을 통해 연결하세요",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontSize: 16,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                  // 좌상단
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          left: BorderSide(color: Color(0xFFDB1E17), width: 6),
+                          top: BorderSide(color: Color(0xFFDB1E17), width: 6),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // 우상단
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          right: BorderSide(color: Color(0xFFDB1E17), width: 6),
+                          top: BorderSide(color: Color(0xFFDB1E17), width: 6),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // 좌하단
+                  Positioned(
+                    left: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          left: BorderSide(color: Color(0xFFDB1E17), width: 6),
+                          bottom:
+                              BorderSide(color: Color(0xFFDB1E17), width: 6),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // 우하단
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          right: BorderSide(color: Color(0xFFDB1E17), width: 6),
+                          bottom:
+                              BorderSide(color: Color(0xFFDB1E17), width: 6),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
-  }
-
-  // QR 스캐너 생성 시 호출되는 함수
-  void _onQRViewCreated(QRViewController controller) {
-    this.controller = controller;
-
-    int counter = 0; // 여러 QR 인식 방지용 카운터
-    controller.scannedDataStream.listen((scanData) async {
-      if (counter > 0 || scanData.code == null) return;
-      counter++;
-
-      await controller.pauseCamera(); // 첫 인식 후 카메라 정지
-      await _tryConnectCart(scanData.code!);
-    });
   }
 
   // 사용자가 직접 코드를 입력할 수 있는 다이얼로그
@@ -101,9 +158,23 @@ class _QRScanScreenState extends State<QRScanScreen> {
         );
         return AlertDialog(
           title: const Text("코드 입력"),
-          content: TextField(
-            controller: textController,
-            decoration: const InputDecoration(hintText: "코드를 입력하세요"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min, // Column의 크기를 내용물에 맞게 조절
+            crossAxisAlignment: CrossAxisAlignment.start, // 왼쪽 정렬
+            children: [
+              TextField(
+                controller: textController,
+                decoration: const InputDecoration(hintText: "코드를 입력하세요"),
+              ),
+              const SizedBox(height: 8), // 간격 추가
+              const Text(
+                "시연 가능 카트: cart-1, cart-2",
+                style: TextStyle(
+                  color: Colors.black54,
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ),
           actions: <Widget>[
             TextButton(
@@ -128,9 +199,6 @@ class _QRScanScreenState extends State<QRScanScreen> {
 
     // 현재 디바이스와 연결된 카트를 해제
     if (easterEgg) {
-      final cartService = CartApiService(
-          baseUrl:
-              'http://ec2-3-38-128-6.ap-northeast-2.compute.amazonaws.com');
       await cartService.disconnectFromAllCarts(DeviceIdService.deviceId);
       if (!mounted) return;
       ScaffoldMessenger.of(context)
@@ -175,12 +243,5 @@ class _QRScanScreenState extends State<QRScanScreen> {
 
       Navigator.pop(context);
     }
-  }
-
-  // 위젯이 제거될 때 컨트롤러 리소스 해제
-  @override
-  void dispose() {
-    controller?.dispose();
-    super.dispose();
   }
 }

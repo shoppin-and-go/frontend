@@ -21,8 +21,7 @@ class ReceiptScreen extends StatelessWidget {
     final String purchaseTime = DateFormat('HH:mm').format(DateTime.now());
     const String purchaseLocation = '이마트 자양점'; // 구매 장소
 
-    final cartService = CartApiService(
-        baseUrl: 'http://ec2-3-38-128-6.ap-northeast-2.compute.amazonaws.com');
+    final cartService = CartApiService();
 
     return PopScope(
       // 뒤로 가기 및 스와이프 동작을 비활성화
