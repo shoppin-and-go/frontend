@@ -24,8 +24,8 @@ String formatToWon(int amount) {
 }
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Flutter 엔진 초기화
-  await DeviceIdService.initialize(); // 디바이스 ID 초기화
+  // WidgetsFlutterBinding.ensureInitialized(); // Flutter 엔진 초기화
+  // await DeviceIdService.initialize(); // 디바이스 ID 초기화
   Logger().d('디바이스ID: ${DeviceIdService.deviceId}');
   runApp(const MyApp());
 }
