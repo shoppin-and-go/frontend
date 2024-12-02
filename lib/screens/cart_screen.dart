@@ -8,6 +8,7 @@ import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 import 'package:logger/logger.dart';
+import 'dart:math';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -139,15 +140,19 @@ class _CartScreenState extends State<CartScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(currentCartId ?? ''),
-          // actions: [
-          //   IconButton(
-          //     onPressed: () {
-          //       _registerTestInventory();
-          //     },
-          //     icon: const Icon(Icons.refresh),
-          //   ),
-          // ],
+          title: const Text('장바구니'),
+          actions: [
+            // 랜덤 상품 추가 버튼
+            IconButton(
+              icon: const Icon(Icons.add_shopping_cart_outlined),
+              onPressed: _addRandomItem,
+            ),
+            // 랜덤 상품 제거 버튼
+            IconButton(
+              icon: const Icon(Icons.delete_outlined),
+              onPressed: _removeRandomItem,
+            ),
+          ],
           backgroundColor: Colors.white,
           elevation: 4,
           shadowColor: Colors.black54,
@@ -265,5 +270,60 @@ class _CartScreenState extends State<CartScreen> {
       },
     );
     return shouldPop ?? false;
+  }
+
+  // 상품 코드와 이름 매핑
+  final Map<String, String> _products = {
+    'ramen-1': '신라면',
+    'ramen-2': '짜파게티',
+    'ramen-3': '불닭볶음면',
+    'chip-1': '콘칩',
+    'chip-2': '새우깡',
+    'chip-3': '포테이토칩',
+    'drink-1': '파워에이드',
+    'drink-2': '게토레이',
+    'drink-3': '코카콜라',
+    'drink-4': '펩시',
+  };
+
+  // 랜덤 상품 추가
+  Future<void> _addRandomItem() async {
+    if (currentCartId == null) return;
+
+    final random = Random();
+    final productCode = _products.keys.elementAt(
+      random.nextInt(_products.length),
+    );
+
+    try {
+      await cartService.changeCartInventory(currentCartId!, productCode, 1);
+      await _loadCartInventory(currentCartId!);
+    } catch (e) {
+      Logger().e('랜덤 상품 추가 실패: $e');
+    }
+  }
+
+  // 랜덤 상품 제거
+  Future<void> _removeRandomItem() async {
+    if (currentCartId == null || cartItems.isEmpty) return;
+
+    final random = Random();
+    final selectedItem = cartItems[random.nextInt(cartItems.length)];
+
+    // 상품 이름으로부터 상품 코드 찾기
+    final productCode = _products.entries
+        .firstWhere((entry) => entry.value == selectedItem.name)
+        .key;
+
+    try {
+      await cartService.changeCartInventory(
+        currentCartId!,
+        productCode,
+        -1,
+      );
+      await _loadCartInventory(currentCartId!);
+    } catch (e) {
+      Logger().e('랜덤 상품 제거 실패: $e');
+    }
   }
 }
