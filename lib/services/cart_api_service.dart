@@ -7,7 +7,7 @@ import 'package:shoppin_and_go/models/cart_inventory_status.dart';
 
 class CartApiService {
   static const baseUrl =
-      'http://ec2-3-38-128-6.ap-northeast-2.compute.amazonaws.com';
+      'https://generous-contentment-production.up.railway.app';
 
   CartApiService();
 
