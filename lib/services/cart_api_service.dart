@@ -6,8 +6,7 @@ import 'package:shoppin_and_go/models/cart_connection.dart';
 import 'package:shoppin_and_go/models/cart_inventory_status.dart';
 
 class CartApiService {
-  static const baseUrl =
-      'https://generous-contentment-production.up.railway.app';
+  static const baseUrl = 'https://proxy-production-95ab.up.railway.app';
 
   CartApiService();
 
