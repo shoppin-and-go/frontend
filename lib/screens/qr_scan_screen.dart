@@ -238,7 +238,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(content: Text(errorMessage)),
       );
 
       Navigator.pop(context);
