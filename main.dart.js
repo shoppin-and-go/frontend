@@ -79179,7 +79179,7 @@ A.wk.prototype={$ibF:1}
 A.MI.prototype={$ibF:1}
 A.nr.prototype={
 an(){var s=t.N
-return new A.B8(new A.qc(),A.b([],t.y6),A.ax(["ramen-1","\uc2e0\ub77c\uba74","ramen-2","\uc9dc\ud30c\uac8c\ud2f0","ramen-3","\ubd88\ub2ed\ubcf6\uc74c\uba74","chip-1","\ucf58\uce69","chip-2","\uc0c8\uc6b0\uae61","chip-3","\ud3ec\ud14c\uc774\ud1a0\uce69","drink-1","\ud30c\uc6cc\uc5d0\uc774\ub4dc","drink-2","\uac8c\ud1a0\ub808\uc774","drink-3","\ucf54\uce74\ucf5c\ub77c","drink-4","\ud3a9\uc2dc"],s,s))}}
+return new A.B8(new A.qc(),A.b([],t.y6),A.ax(["ramen-1","\uc2e0\ub77c\uba74","ramen-2","\uc9dc\ud30c\uac8c\ud2f0","chip-1","\ucf58\uce69","chip-2","\uc0c8\uc6b0\uae61","chip-3","\ud3ec\ud14c\uc774\ud1a0\uce69","drink-1","\ud30c\uc6cc\uc5d0\uc774\ub4dc","drink-2","\uac8c\ud1a0\ub808\uc774","drink-3","\ucf54\uce74\ucf5c\ub77c","drink-4","\ud3a9\uc2dc"],s,s))}}
 A.B8.prototype={
 az(){this.aQ()
 this.a6d()},
