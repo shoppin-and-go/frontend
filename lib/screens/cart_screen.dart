@@ -276,7 +276,7 @@ class _CartScreenState extends State<CartScreen> {
   final Map<String, String> _products = {
     'ramen-1': '신라면',
     'ramen-2': '짜파게티',
-    'ramen-3': '불닭볶음면',
+    // 'ramen-3': '불닭볶음면', 뭐지 이 새끼 이미지 안 불러와짐 ㄷㄷ
     'chip-1': '콘칩',
     'chip-2': '새우깡',
     'chip-3': '포테이토칩',
